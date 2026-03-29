@@ -16,6 +16,7 @@ import {
 
 // ១. នាំចូល Outlet ដើម្បីបង្ហាញ Component កូនៗ
 import { Outlet } from "react-router-dom";
+import { Toaster }  from "sonner";
 
 const DashboardLayout = () => {
     return (
@@ -50,6 +51,7 @@ const DashboardLayout = () => {
                     <Outlet />
                 </div>
             </SidebarInset>
+            <Toaster position="bottom-right" expand={true} />
         </SidebarProvider>
     )
 }

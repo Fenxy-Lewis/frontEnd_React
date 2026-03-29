@@ -3,8 +3,6 @@
 import * as React from "react"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -12,12 +10,13 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-  User,
-  ShoppingCart,
   Component,
-
+  ShoppingCart,
+  UserCircle,
+  LayoutList,
+  PlusCircle,
 } from "lucide-react"
-import { Link } from "react-router-dom";
+
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
@@ -30,133 +29,64 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
 const data = {
   user: {
     name: "Fenxy",
     email: "lunsereyvorth@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/public/img/photo_2024-11-28_08-45-41.jpg",
   },
   teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
+    { name: "Acme Inc",  logo: GalleryVerticalEnd, plan: "Enterprise" },
+    { name: "Acme Corp.", logo: AudioWaveform,      plan: "Startup"    },
+    { name: "Evil Corp.", logo: Command,            plan: "Free"       },
   ],
   navMain: [
     {
-      title: "Products",
-      url: "",
+      title: "Product",
       icon: SquareTerminal,
-      isActive: true,
       items: [
-        {
-          title: "All Products",
-          url: "/product",
-        },
-        {
-          title: "All Categories",
-          url: "/category",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
+        { title: "Products List", url: "/admin/product",  icon: LayoutList  },
+        { title: "Add Product",   url: "/admin/product/create", icon: PlusCircle },
       ],
     },
     {
-      title: "Categories",
-      url: "#",
+      title: "Category",
       icon: Component,
       items: [
-        {
-          title: "Add New",
-          url: "#",
-        },
-        {
-          title: "Delete",
-          url: "#",
-        },
-        {
-          title: "Update",
-          url: "#",
-        },
+        { title: "Categories List", url: "/admin/category",        icon: LayoutList  },
+        { title: "Add Category",    url: "/category/create", icon: PlusCircle  },
       ],
     },
     {
-      title: "Users",
-      url: "#",
-      icon: User,
+      title: "Customer",
+      icon: ShoppingCart,
       items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
+        { title: "Customers List", url: "/admin/customer",        icon: LayoutList  },
+        { title: "Add Customer",   url: "/admin/customer/create", icon: PlusCircle  },
+      ],
+    },
+    {
+      title: "User",
+      icon: UserCircle,
+      items: [
+        { title: "Users List", url: "/admin/user",        icon: LayoutList  },
+        { title: "Add User",   url: "/admin/user/create", icon: PlusCircle  },
       ],
     },
     {
       title: "Settings",
-      url: "#",
       icon: Settings2,
       items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+        { title: "General", url: "/settings/general" },
+        { title: "Team",    url: "/settings/team"    },
+        { title: "Billing", url: "/settings/billing" },
       ],
     },
   ],
   projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
+    { name: "Design Engineering", url: "#", icon: Frame    },
+    { name: "Sales & Marketing",  url: "#", icon: PieChart },
+    { name: "Travel",             url: "#", icon: Map      },
   ],
 }
 

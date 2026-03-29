@@ -1,11 +1,15 @@
 // import ProductCard from "./components/ProductCard";
 import Product from "./page/Product";
-import {Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 // import {Button} from "./components/ui/button.tsx";
 // import {useState} from "react";
 import Home from "./page/Home.tsx";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Category from "./page/category.tsx";
+import { LoginForm } from "./components/Login/loginForm.tsx";
+import LoginPage from "./page/loginPage.tsx";
+import LoginLayout from "./layouts/LoginLayout.tsx";
+
 function App() {
   // const [count, setCount]= useState<number>(0);
   // const handleincrease=()=>{
@@ -52,12 +56,15 @@ function App() {
   // </div>
   return (
     <Routes>
-        <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/category" element={<Category />} />
+        <Route element={<LoginPage />}>
+          <Route path="/" element={<LoginForm />} />
         </Route>
-      </Routes>
+
+      <Route element={<DashboardLayout />}>
+        <Route path="/admin/product" element={<Product />} />
+        <Route path="/admin/category" element={<Category />} />
+      </Route>
+    </Routes>
   );
 }
 

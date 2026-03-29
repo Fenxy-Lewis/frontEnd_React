@@ -8,6 +8,9 @@ const Home: React.FC = () => {
             <Link to="/product">
                 <Button>Product Page</Button>
             </Link>
+            <Link to="/login">
+                <Button>Login Page</Button>
+            </Link>
             <h1>Welcome to Home Page</h1>
             <p>សូមស្វាគមន៍មកកាន់ទំព័រដើម!</p>
         </div>
