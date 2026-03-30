@@ -7,9 +7,9 @@ export const api = axios.create({
   },
 });
 
-export const apiImage = axios.create({
-  baseURL: ENV.API_URL,
-  headers: {
-    "Content-Type": "multipart/form-data",
-  },
-});
+// export const apiImage = axios.create({
+//   baseURL: ENV.API_URL,
+//   headers: {
+//     "Content-Type": "multipart/form-data",
+//   },
+// });

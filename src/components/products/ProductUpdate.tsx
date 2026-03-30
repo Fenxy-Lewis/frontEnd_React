@@ -99,7 +99,7 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
 
   const form = useForm({
     defaultValues: {
-      imageUrl: product.productImages?.[0].imageUrl,
+      productImages: product.productImages,
       name: product.name ?? "",
       price: Number(product.price),
       description: product.description ?? "",
@@ -116,12 +116,11 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
       },
     },
 
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({value}) => {
       await updateProduct({
         id: product.id,
         payload: value,
       });
-
       uploadedFiles.forEach((file) => {
         uploadProductImage({
           id: product.id,
@@ -403,7 +402,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
             </div>
 
             {/* Preview Image */}
-            {product.productImages && product.productImages.length > 0 && (
               <div className="space-y-1">
                 {product.productImages.map((image, index: number) => (
                   <div
@@ -440,8 +438,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                   </div>
                 ))}
               </div>
-            )}
-
             {/* New Uploads Preview */}
             <div
               className={`pb-5 space-y-3 ${

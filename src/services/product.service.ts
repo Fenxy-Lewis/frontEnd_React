@@ -1,5 +1,5 @@
 import axios from "axios";
-import { api, apiImage } from "@/lib/api";
+import {api} from "@/lib/api";
 import { toast } from "sonner";
 
 export const fetchProducts = async (
@@ -91,7 +91,11 @@ export const uploadProductImage =async(id:number,file:File) =>{
   try {
     const formData = new FormData();
     formData.append("file",file);
-    return await apiImage.post(`/products/${id}/upload`,formData)
+    return await api.post(`/products/${id}/upload`,formData,{
+      headers:{
+        "Content-Type": "multipart/form-data",
+      }
+    })
   } catch (error) {
     if(axios.isAxiosError(error)){
       toast.error("Failed to upload product image", {
@@ -109,7 +113,7 @@ export const uploadProductImage =async(id:number,file:File) =>{
 // Delete ProductImage
 export const deleteProductImage =async(id:number) =>{
   try {
-    const res = await apiImage.delete(`/products/${id}/delete`)
+    const res = await api.delete(`/products/${id}/delete`)
     return res.data;
   } catch (error) {
     if(axios.isAxiosError(error)){
