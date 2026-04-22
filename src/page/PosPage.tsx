@@ -41,7 +41,6 @@ export default function Page() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<string>("cash");
-
   const productFectchForPos = (productData?.data as ProductType[]) ?? [];
   const categoryFecthForPos = (categoryData as CategoryType[]) ?? [];
   console.log("Product:", productFectchForPos);
@@ -140,9 +139,9 @@ export default function Page() {
         const orderId = res.data.id;
         createPaymentMutate(orderId, {
           onSuccess: (res) => {
-            console.log("Res", res);
             if (res.data) {
               const payway = res.data.payway;
+
               const form = document.createElement("form");
               form.id = "aba_merchant_request";
               form.method = payway.method;
@@ -161,14 +160,11 @@ export default function Page() {
               setIsOpen(false);
               AbaPayway?.checkout();
             }
-            toast.success("Order Placed Successfully!");
-            setOrderItems([]);
-            setIsOpen(false);
           },
         });
-      },
-      onError: () => {
-        toast.error("Failed to place order");
+        // setCartItems([]);
+        // setIsOpen(false);
+        // setIsSuccess(true);
       },
     });
   };
