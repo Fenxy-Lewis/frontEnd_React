@@ -39,7 +39,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { VariantProps } from "class-variance-authority";
+import { type VariantProps } from "class-variance-authority";
 
 type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
 type IconElement = React.ReactElement<{ size: number; className?: string }>;

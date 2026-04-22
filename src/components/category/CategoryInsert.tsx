@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { z } from "zod";
 import { categorySchema } from "../schemas/categorySchema";
@@ -34,26 +33,25 @@ export function CategoryInsert({ open, setOpen }: Props) {
   const queryClient = useQueryClient(); // ✅ ប្រើ hook ជំនួស
   const createCategory = useCreateCategory(); // ✅ ហៅ hook ត្រឹមត្រូវ
 
-  const form = useForm<CategoryValues>({
-    defaultValues: { name: "", is_active: true },
-    validators: {
-      onSubmit: ({ value }) => {
-        const result = categorySchema.safeParse(value);
-        if (result.success) return undefined;
-        return result.error.flatten().fieldErrors;
-      },
+const form = useForm({
+  defaultValues: { name: "", is_active: true as boolean } satisfies CategoryValues,
+  validators: {
+    onSubmit: ({ value }) => {
+      const result = categorySchema.safeParse(value);
+      if (result.success) return undefined;
+      return result.error.flatten().fieldErrors;
     },
-    onSubmit: async ({ value }) => {
-      await createCategory.mutateAsync({ // ✅ ប្រើ instance ដែលបានហៅ
-        name: value.name.trim(),
-        is_active: value.active || true,
-      });
-      // ✅ ដាក់ logic នៅទីនេះវិញ
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      setOpen(false);
-      form.reset();
-    },
-  });
+  },
+  onSubmit: async ({ value }) => {
+    await createCategory.mutateAsync({
+      name: value.name.trim(),
+      is_active: value.is_active ?? true,
+    });
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
+    setOpen(false);
+    form.reset();
+  },
+});
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -94,7 +92,7 @@ export function CategoryInsert({ open, setOpen }: Props) {
               }}
             />
             <form.Field
-              name="active"
+              name="is_active"
               children={(field) => {
                 return (
                   <Field orientation="responsive">
@@ -105,7 +103,7 @@ export function CategoryInsert({ open, setOpen }: Props) {
                     <div className="flex items-center justify-end">
                       <Switch
                         checked={field.state.value}
-                        onCheckedChange={(v) => field.handleChange(Boolean(v))}
+                        onCheckedChange={(v) => field.handleChange(v as boolean)}
                       />
                     </div>
                   </Field>

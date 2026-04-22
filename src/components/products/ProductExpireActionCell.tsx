@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { SquarePen, Trash2 } from "lucide-react";
 import type { ProductExpireType } from "@/Type/productExpire";
 import { ProductExpireDelete } from "./productExpireDelete";
