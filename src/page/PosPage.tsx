@@ -159,7 +159,7 @@ export default function Page() {
               document.body.appendChild(form);
 
               setIsOpen(false);
-              window.AbaPayway?.checkout();
+              AbaPayway?.checkout();
             }
             toast.success("Order Placed Successfully!");
             setOrderItems([]);
