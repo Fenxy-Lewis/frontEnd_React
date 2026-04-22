@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/hooks/category/useCategories";
 import {
   Field,
   FieldDescription,
@@ -30,11 +30,13 @@ import {
 } from "@/components/ui/select";
 import { productSchema } from "../schemas/productSchema";
 import { Switch } from "../ui/switch";
-import { useUpdateProduct } from "@/hooks/useUpdateProduct";
+import { useUpdateProduct } from "@/hooks/product/useUpdateProduct";
 import type { Products } from "@/components/products/columnsProduct";
 import { Trash2, Upload } from "lucide-react";
-import { useUploadProductImage } from "@/hooks/useUploadProductImage";
+import { useUploadProductImage } from "@/hooks/product/useUploadProductImage";
 import { useRef, useState } from "react";
+import { useDeleteProductImage } from "@/hooks/product/useDeleteImage";
+import type { ProductImage } from "@/Type/product";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -44,35 +46,17 @@ interface Props {
 export const ProductUpdate = ({ open, setOpen, product }: Props) => {
   const { data, isLoading } = useCategories();
   const { mutateAsync: updateProduct } = useUpdateProduct();
-
+  const { mutateAsync: deleteProductImageMutate } = useDeleteProductImage();
   const { mutateAsync: uploadProductImage } = useUploadProductImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [fileProgresses, setFileProgresses] = useState<Record<string, number>>(
-    {},
-  );
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
 
     const newFiles = Array.from(files);
     setUploadedFiles((prev) => [...prev, ...newFiles]);
-
-    // Simulate upload progress for each file
-    newFiles.forEach((file) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-        }
-        setFileProgresses((prev) => ({
-          ...prev,
-          [file.name]: Math.min(progress, 100),
-        }));
-      }, 300);
-    });
   };
 
   const handleBoxClick = () => {
@@ -90,11 +74,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
 
   const removeFile = (filename: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.name !== filename));
-    setFileProgresses((prev) => {
-      const newProgresses = { ...prev };
-      delete newProgresses[filename];
-      return newProgresses;
-    });
   };
 
   const form = useForm({
@@ -116,22 +95,37 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
       },
     },
 
-    onSubmit: async ({value}) => {
+    onSubmit: async ({ value }) => {
+      // 1. Update Product Info
       await updateProduct({
         id: product.id,
         payload: value,
       });
-      uploadedFiles.forEach((file) => {
-        uploadProductImage({
-          id: product.id,
-          request: file,
-        });
-      });
 
+      // 2. Upload New Images (Await all)
+      if (uploadedFiles.length > 0) {
+        const uploadPromises = uploadedFiles.map((file) =>
+          uploadProductImage({
+            id: product.id,
+            request: file,
+          })
+        );
+        await Promise.all(uploadPromises);
+      }
+
+      // 3. Delete Removed Images (Await all)
+      if (deletedImageIds.length > 0) {
+        const deletePromises = deletedImageIds.map((imageId) =>
+          deleteProductImageMutate(imageId)
+        );
+        await Promise.all(deletePromises);
+      }
+
+      // 4. Clear state & close
+      setUploadedFiles([]);
+      setDeletedImageIds([]);
       setOpen(false);
       form.reset();
-      setUploadedFiles([]);
-      setFileProgresses({});
     },
   });
 
@@ -221,7 +215,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                 }}
               />
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               {/* Category */}
               <form.Field
@@ -309,7 +302,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                 }}
               />
             </div>
-
             {/* Description */}
             <form.Field
               name="description"
@@ -343,7 +335,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                 );
               }}
             />
-
             {/* isActive Switch */}
             <form.Field
               name="isActive"
@@ -364,7 +355,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                 );
               }}
             />
-
             {/* Upload Image */}
             <div>
               <div
@@ -400,44 +390,53 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                 />
               </div>
             </div>
-
             {/* Preview Image */}
-              <div className="space-y-1">
-                {product.productImages.map((image, index: number) => (
-                  <div
-                    key={index}
-                    className="border border-border rounded-lg p-2 flex items-center gap-2"
-                  >
-                    <div className="w-15 aspect-square bg-muted rounded-sm flex items-center justify-center self-start row-span-2 overflow-hidden">
-                      <img
-                        src={image.imageUrl}
-                        alt={image.fileName}
-                        className="w-15 aspect-square object-cover"
-                      />
-                    </div>
+            {product.productImages && product.productImages.length > 0 && (
+              <div className="space-y-2">
+                {product.productImages
+                  .filter(
+                    (image: ProductImage) =>
+                      !deletedImageIds.includes(image.id),
+                  )
+                  .map((image: ProductImage, index: number) => (
+                    <div
+                      key={index}
+                      className="border border-border rounded-lg p-2 flex items-center gap-2"
+                    >
+                      <div className="w-15 aspect-square bg-muted rounded-sm flex items-center justify-center self-start row-span-2 overflow-hidden">
+                        <img
+                          src={image.imageUrl}
+                          alt={image.fileName}
+                          className="w-15 aspect-square object-cover"
+                        />
+                      </div>
 
-                    <div className="flex-1 pr-1">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-foreground truncate max-w-[250px]">
-                            {image.fileName}
-                          </span>
+                      <div className="flex-1 pr-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-foreground truncate max-w-[250px]">
+                              {image.fileName}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            type="button"
+                            className="bg-transparent! hover:text-red-500"
+                            onClick={() => {
+                              setDeletedImageIds((prev) => [...prev, image.id]);
+                              // deleteProductImageMutate(image.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="bg-transparent! hover:text-red-500"
-                          onClick={() => {
-                            removeFile(image.fileName);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
+            )}
+
             {/* New Uploads Preview */}
             <div
               className={`pb-5 space-y-3 ${
@@ -482,20 +481,6 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 bg-muted rounded-full overflow-hidden flex-1">
-                            <div
-                              className="h-full bg-primary"
-                              style={{
-                                width: `${fileProgresses[file.name] || 0}%`,
-                              }}
-                            ></div>
-                          </div>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {Math.round(fileProgresses[file.name] || 0)}%
-                          </span>
                         </div>
                       </div>
                     </div>

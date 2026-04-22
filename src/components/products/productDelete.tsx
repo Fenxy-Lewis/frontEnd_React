@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDeleteProduct } from "@/hooks/useDeleteProduct";
+import { useDeleteProduct } from "@/hooks/product/useDeleteProduct";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 interface Props {
@@ -17,10 +17,14 @@ interface Props {
   setOpen: (open: boolean) => void;
   productId: number;
   productName?: string;
-  id: number;
 }
 
-export function ProductDelete({ open, setOpen, productId, productName,id }: Props) {
+export function ProductDelete({
+  open,
+  setOpen,
+  productId,
+  productName,
+}: Props) {
   const { mutateAsync: deleteProduct, isPending } = useDeleteProduct();
   const handleDelete = async () => {
     await deleteProduct(productId);
@@ -31,7 +35,12 @@ export function ProductDelete({ open, setOpen, productId, productName,id }: Prop
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <DotLottieReact src="/public/animations/Delete message.json" loop autoplay style={{ width: 120, height: 120, margin: '0 auto' }}/>
+          <DotLottieReact
+            src="/animations/Delete Files Loop.json"
+            loop
+            autoplay
+            style={{ width: 220, height: 220, margin: "0 auto" }}
+          />
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete{" "}

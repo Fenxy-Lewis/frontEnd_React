@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,16 +22,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-import { fetchCategories } from "@/services/category.service";
-import { createProduct, type CreateProductInput } from "@/services/product.service";
+import type { CreateProductInput } from "@/Type/product";
+import { fetchCategory } from "@/services/category.service";
+import { CreateProduct } from "@/services/product.service";
 
 type FormState = {
   name: string;
   description: string;
   color: string;
-  price: string;      // keep as string for input
-  qty: string;        // keep as string for input
+  price: string; // keep as string for input
+  qty: string; // keep as string for input
   categoryId: string; // select returns string
   isActive: boolean;
 };
@@ -56,9 +56,9 @@ export default function AddProductModal() {
   // Load categories for dropdown
   const { data: categories, isLoading: catLoading } = useQuery({
     queryKey: ["categories"],
-    queryFn: fetchCategories,
-    staleTime:1000*60*5, // 5 minutes
-    gcTime:1000*60*30, // 1 minute
+    queryFn: fetchCategory,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 1 minute
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
@@ -74,14 +74,14 @@ export default function AddProductModal() {
   }, [form]); //   return value: true and false only, so we can use it to disable submit button and show error message
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (payload: CreateProductInput) => createProduct(payload),
+    mutationFn: (payload: CreateProductInput) => CreateProduct(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setForm(initialForm);
       setErrorMsg("");
       setOpen(false);
     },
-    onError: (e: any) => {
+    onError: (e: Error) => {
       setErrorMsg(e?.message || "Create product failed");
     },
   });
@@ -105,7 +105,11 @@ export default function AddProductModal() {
       isActive: form.isActive,
     };
 
-    if (Number.isNaN(payload.price) || Number.isNaN(payload.qty) || Number.isNaN(payload.categoryId)) {
+    if (
+      Number.isNaN(payload.price) ||
+      Number.isNaN(payload.qty) ||
+      Number.isNaN(payload.categoryId)
+    ) {
       setErrorMsg("Price/Qty/Category must be number");
       return;
     }
@@ -117,8 +121,9 @@ export default function AddProductModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-orange-400">
-            <Plus className="w-4 h-4" color="white"/>
-            Add Product</Button>
+          <Plus className="w-4 h-4" color="white" />
+          Add Product
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-lg">
@@ -142,7 +147,9 @@ export default function AddProductModal() {
             <Label>Description</Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Short description..."
             />
           </div>
@@ -189,7 +196,9 @@ export default function AddProductModal() {
               disabled={catLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder={catLoading ? "Loading..." : "Select category"} />
+                <SelectValue
+                  placeholder={catLoading ? "Loading..." : "Select category"}
+                />
               </SelectTrigger>
               <SelectContent>
                 {categories?.map((c) => (
@@ -211,12 +220,16 @@ export default function AddProductModal() {
             </div>
             <Switch
               checked={form.isActive}
-              onCheckedChange={(checked) => setForm({ ...form, isActive: checked })}
+              onCheckedChange={(checked) =>
+                setForm({ ...form, isActive: checked })
+              }
             />
           </div>
 
           {/* Error */}
-          {errorMsg ? <div className="text-sm text-red-500">{errorMsg}</div> : null}
+          {errorMsg ? (
+            <div className="text-sm text-red-500">{errorMsg}</div>
+          ) : null}
 
           {/* Footer buttons */}
           <div className="flex justify-end gap-2 pt-2">

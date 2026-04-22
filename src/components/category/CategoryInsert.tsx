@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import type { z } from "zod";
 import { categorySchema } from "../schemas/categorySchema";
-import { useCreateCategory } from "@/hooks/useCreateCategory";
+import { useCreateCategory } from "@/hooks/category/useCreateCategory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";

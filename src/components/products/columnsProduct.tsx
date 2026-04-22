@@ -8,9 +8,9 @@ export type Products = {
   id: number;
   productImages: {
     imageUrl: string;
-    fileName:string;
-    id:number;
-    productId:number;
+    fileName: string;
+    id: number;
+    productId: number;
   }[];
   name: string;
   price: string | number;
@@ -23,74 +23,151 @@ export type Products = {
   isActive: boolean;
 };
 
-
-
 export const columns: ColumnDef<Products>[] = [
   {
     accessorKey: "id",
-    header: "ID",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        ID
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="text-sm font-mono text-gray-400">
+        #{row.getValue("id")}
+      </span>
+    ),
   },
   {
     accessorKey: "productImages",
-    header: "Image",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Image
+      </span>
+    ),
     cell: ({ row }) => {
-      const imageUrl = row.original.productImages?.[0]?.imageUrl;
+      const images = row.original.productImages;
+      const latestImage =
+        images && images.length > 0
+          ? [...images].sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0]
+          : null;
+      const imageUrl = latestImage?.imageUrl;
+
       return (
-        <img
-          src={imageUrl ?? "../../../public/img/no-image.png"}
-          alt="Product Image"
-          className="w-10 aspect-square object-cover"
-        />
+        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-gray-100 bg-gray-50 p-0.5">
+          <img
+            src={imageUrl ?? "../../../public/img/no-image.png"}
+            alt="Product"
+            className="h-full w-full object-cover rounded-md"
+          />
+        </div>
       );
     },
   },
   {
     accessorKey: "name",
-    header: "Product Name",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Product Name
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="text-sm font-semibold text-gray-900">
+        {row.getValue("name")}
+      </span>
+    ),
   },
   {
     accessorKey: "price",
-    header: "Price",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Price
+      </span>
+    ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("price"));
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
       }).format(amount);
-      return <div className="text-green-700 font-medium">{formatted}</div>;
+      return (
+        <span className="text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          {formatted}
+        </span>
+      );
     },
   },
   {
     id: "category",
-    header: "Category",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Category
+      </span>
+    ),
     accessorFn: (row) => row.category?.name ?? "—",
+    cell: ({ row }) => (
+      <Badge
+        variant="secondary"
+        className="bg-gray-100 text-gray-600 border-0 font-medium text-xs px-2.5 py-0.5 rounded-md"
+      >
+        {row.getValue("category")}
+      </Badge>
+    ),
   },
   {
     accessorKey: "qty",
-    header: "Quantity",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Stock
+      </span>
+    ),
+    cell: ({ row }) => {
+      const qty = row.getValue("qty") as number;
+      return (
+        <span
+          className={`text-sm font-semibold tabular-nums ${
+            qty <= 0
+              ? "text-red-600"
+              : qty <= 5
+                ? "text-amber-600"
+                : "text-gray-900"
+          }`}
+        >
+          {qty.toLocaleString()}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "isActive",
-    header: "Status",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Status
+      </span>
+    ),
     cell: ({ row }) => {
       const isActive = row.getValue("isActive") as boolean;
       const Icon = isActive ? CircleCheck : CircleX;
       return (
         <Badge
-          className={`flex items-center gap-2 ${
-            isActive ? "bg-green-700" : "bg-red-600"
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border-0 ${
+            isActive
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-red-50 text-red-600"
           }`}
         >
-          <Icon size={16} />
+          <Icon className="h-3 w-3" />
           {isActive ? "Active" : "Inactive"}
         </Badge>
       );
     },
   },
   {
-    header: "Actions",
+    header: () => (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Actions
+      </span>
+    ),
     id: "actions",
-    // ✅ ប្រើ ActionCell component វិញ ដើម្បីអាច useState បាន
     cell: ({ row }) => <ActionCell row={row} />,
   },
 ];

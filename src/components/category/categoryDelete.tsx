@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDeleteCategory } from "@/hooks/useDeleteCategory";
+import { useDeleteCategory } from "@/hooks/category/useDeleteCategory";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 interface Props {
@@ -36,7 +36,12 @@ export function CategoryDelete({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-            <DotLottieReact src="/public/animations/Delete message.json" loop autoplay style={{ width: 220, height: 220, margin: '0 auto' }}/>
+          <DotLottieReact
+            src="/animations/Delete Files Loop.json"
+            loop
+            autoplay
+            style={{ width: 220, height: 220, margin: "0 auto" }}
+          />
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This will permanently delete{" "}

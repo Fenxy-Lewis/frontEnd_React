@@ -1,14 +1,15 @@
 // import ProductCard from "./components/ProductCard";
 import Product from "./page/Product";
-import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
-// import {Button} from "./components/ui/button.tsx";
-// import {useState} from "react";
-import Home from "./page/Home.tsx";
+import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Category from "./page/category.tsx";
+import Customers from "./page/Customers.tsx";
 import { LoginForm } from "./components/Login/loginForm.tsx";
 import LoginPage from "./page/loginPage.tsx";
-import LoginLayout from "./layouts/LoginLayout.tsx";
+import Page from "./page/PosPage.tsx";
+import Home from "./page/Home.tsx";
+import ProductControllExpire from "./page/ProductControllExpire.tsx";
+
 
 function App() {
   // const [count, setCount]= useState<number>(0);
@@ -56,14 +57,18 @@ function App() {
   // </div>
   return (
     <Routes>
-        <Route element={<LoginPage />}>
-          <Route path="/" element={<LoginForm />} />
-        </Route>
+      <Route element={<LoginPage />}>
+        <Route path="/" element={<LoginForm />} />
+      </Route>
 
       <Route element={<DashboardLayout />}>
+        <Route path="/admin" element={<Navigate to="/admin/home" replace />} />
+        <Route path="/admin/home" element={<Home />} />
+        <Route path="/admin/pos" element={<Page />} />
         <Route path="/admin/product" element={<Product />} />
+        <Route path="/admin/product-expire" element={<ProductControllExpire />} />
         <Route path="/admin/category" element={<Category />} />
-      </Route>
+        <Route path="/admin/customer" element={<Customers />} />      </Route>
     </Routes>
   );
 }

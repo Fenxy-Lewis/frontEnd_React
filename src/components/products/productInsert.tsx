@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@/components/ui/button";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/hooks/category/useCategories";
 import {
   Field,
   FieldError,
@@ -29,11 +29,11 @@ import {
 } from "@/components/ui/select";
 import { productSchema } from "../schemas/productSchema";
 import { Switch } from "../ui/switch";
-import { useCreateProduct } from "@/hooks/useCreateProduct";
+import { useCreateProduct } from "@/hooks/product/useCreateProduct";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
-import { useUploadProductImage } from "@/hooks/useUploadProductImage";
+import { useUploadProductImage } from "@/hooks/product/useUploadProductImage";
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -474,7 +474,10 @@ export const ProductInsert = ({ open, setOpen }: Props) => {
                           if (files && files.length > 0) {
                             handleFileSelect(files);
                             // សំខាន់៖ ត្រូវ update ទៅកាន់ TanStack Form
-                            field.handleChange([...field.state.value, ...Array.from(files)]);
+                            field.handleChange([
+                              ...field.state.value,
+                              ...Array.from(files),
+                            ]);
                           }
                         }}
                       />
@@ -533,7 +536,12 @@ export const ProductInsert = ({ open, setOpen }: Props) => {
                             className="bg-transparent! hover:text-red-500"
                             onClick={() => {
                               removeFile(file.name);
-                              form.setFieldValue("productImages", form.getFieldValue("productImages").filter((f: File) => f.name !== file.name));
+                              form.setFieldValue(
+                                "productImages",
+                                form
+                                  .getFieldValue("productImages")
+                                  .filter((f: File) => f.name !== file.name),
+                              );
                             }}
                           >
                             <Trash2 className="h-4 w-4" />

@@ -1,56 +1,45 @@
 import { AppSidebar } from "../components/app-sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../components/ui/breadcrumb";
-import { Separator } from "../components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "../components/ui/sidebar";
-
-// ១. នាំចូល Outlet ដើម្បីបង្ហាញ Component កូនៗ
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 
 const DashboardLayout = () => {
+  const { pathname } = useLocation();
+
+  // Derive breadcrumb from path
+  const pathSegments = pathname
+    .split("/")
+    .filter(Boolean)
+    .map((seg) => seg.charAt(0).toUpperCase() + seg.slice(1));
+  const currentPage = pathSegments[pathSegments.length - 1] || "Dashboard";
+
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen bg-gray-50/50">
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Current Page</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+
+      {/* Main Content */}
+      <main className="flex flex-1 flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-gray-200/80 bg-white/80 backdrop-blur-md px-6 shadow-sm">
+          <nav className="flex items-center gap-1.5 text-sm">
+            <a
+              href="/admin/home"
+              className="text-gray-400 hover:text-gray-600 transition-colors font-medium"
+            >
+              Dashboard
+            </a>
+            <span className="text-gray-300">/</span>
+            <span className="font-semibold text-gray-800">{currentPage}</span>
+          </nav>
         </header>
-        {/* ២. កន្លែងសម្រាប់បង្ហាញ Content នៃទំព័រនីមួយៗ */}
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {/* ប្រើ Outlet នៅទីនេះ */}
+
+        {/* Page Content */}
+        <div className="flex flex-1 flex-col gap-4 p-6">
           <Outlet />
         </div>
-      </SidebarInset>
+      </main>
+
       <Toaster position="top-center" expand={true} richColors />
-    </SidebarProvider>
+    </div>
   );
 };
 

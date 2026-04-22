@@ -1,6 +1,7 @@
 import axios from "axios";
-import {api} from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
+import type { ProductType, CreateProductInput } from "@/Type/product";
 
 export const fetchProducts = async (
   search: string,
@@ -28,24 +29,6 @@ export const fetchProducts = async (
   }
 };
 
-export type CreateProductInput = {
-  name: string;
-  description?: string;
-  color?: string;
-  price: number;
-  qty: number;
-  categoryId: number;
-  isActive: boolean;
-  productImages?:ProductImage[];
-};
-
-export type ProductImage = {
-  id: number;
-  fileName:string;
-  imageUrl: string;
-  productId: number;
-};
-
 
 export async function CreateProduct(payload: CreateProductInput) {
   try {
@@ -64,10 +47,7 @@ export async function CreateProduct(payload: CreateProductInput) {
 }
 
 // Update
-export async function updateProduct(
-  id: number,
-  payload: Partial<CreateProductInput>,
-) {
+export async function updateProduct(id: number, payload: Partial<ProductType>) {
   try {
     const res = await api.put(`/products/${id}`, payload);
     return res.data;
@@ -87,17 +67,17 @@ export async function updateProduct(
 }
 
 // File Upload ProductImage
-export const uploadProductImage =async(id:number,file:File) =>{
+export const uploadProductImage = async (id: number, file: File) => {
   try {
     const formData = new FormData();
-    formData.append("file",file);
-    return await api.post(`/products/${id}/upload`,formData,{
-      headers:{
+    formData.append("file", file);
+    return await api.post(`/products/${id}/upload`, formData, {
+      headers: {
         "Content-Type": "multipart/form-data",
-      }
-    })
+      },
+    });
   } catch (error) {
-    if(axios.isAxiosError(error)){
+    if (axios.isAxiosError(error)) {
       toast.error("Failed to upload product image", {
         description:
           error.response?.data?.message ||
@@ -109,14 +89,14 @@ export const uploadProductImage =async(id:number,file:File) =>{
     }
     throw new Error("Failed to upload product image");
   }
-}
+};
 // Delete ProductImage
-export const deleteProductImage =async(id:number) =>{
+export const deleteProductImage = async (id: number) => {
   try {
-    const res = await api.delete(`/products/${id}/delete`)
+    const res = await api.delete(`/products/delete/${id}`);
     return res.data;
   } catch (error) {
-    if(axios.isAxiosError(error)){
+    if (axios.isAxiosError(error)) {
       toast.error("Failed to delete product image", {
         description:
           error.response?.data?.message ||
@@ -128,4 +108,4 @@ export const deleteProductImage =async(id:number) =>{
     }
     throw new Error("Failed to delete product image");
   }
-}
+};
