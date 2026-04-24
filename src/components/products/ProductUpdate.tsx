@@ -106,9 +106,9 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
       if (uploadedFiles.length > 0) {
         const uploadPromises = uploadedFiles.map((file) =>
           uploadProductImage({
-            id: product.id,
+            imageId: product.id,
             request: file,
-          })
+          }),
         );
         await Promise.all(uploadPromises);
       }
@@ -116,7 +116,7 @@ export const ProductUpdate = ({ open, setOpen, product }: Props) => {
       // 3. Delete Removed Images (Await all)
       if (deletedImageIds.length > 0) {
         const deletePromises = deletedImageIds.map((imageId) =>
-          deleteProductImageMutate(imageId)
+          deleteProductImageMutate(imageId),
         );
         await Promise.all(deletePromises);
       }

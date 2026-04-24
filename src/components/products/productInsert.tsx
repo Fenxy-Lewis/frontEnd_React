@@ -136,7 +136,7 @@ export const ProductInsert = ({ open, setOpen }: Props) => {
       if (newProduct.data.id) {
         uploadedFiles.forEach((file) => {
           uploadProductImage({
-            id: newProduct.data.id,
+            imageId: newProduct.data.id,
             request: file,
           });
         });
