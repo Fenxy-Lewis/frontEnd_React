@@ -133,13 +133,15 @@ export const ProductInsert = ({ open, setOpen }: Props) => {
         categoryId: value.categoryId ?? 0,
       });
       console.log("newProduct Data: ", newProduct);
-      if (newProduct.data.id) {
-        uploadedFiles.forEach((file) => {
-          uploadProductImage({
-            imageId: newProduct.data.id,
-            request: file,
-          });
-        });
+      if (newProduct.data?.id) {
+        await Promise.all(
+          uploadedFiles.map((file) =>
+            uploadProductImage({
+              imageId: newProduct.data.id,
+              request: file,
+            }),
+          ),
+        );
       }
       queryClient.invalidateQueries({ queryKey: ["products"] }); // ✅ invalidate products query
       setOpen(false);
