@@ -38,7 +38,7 @@ const DashboardLayout = () => {
         </div>
       </main>
 
-      <Toaster position="top-center" expand={true} richColors />
+      <Toaster position="bottom-right" expand={true} richColors />
     </div>
   );
 };

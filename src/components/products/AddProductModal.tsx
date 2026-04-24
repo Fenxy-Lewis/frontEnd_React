@@ -1,7 +1,19 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Plus } from "lucide-react";
+import {
+  Plus,
+  Package,
+  Tag,
+  DollarSign,
+  Hash,
+  AlignLeft,
+  Palette,
+  Layers,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import {
   Dialog,
   DialogContent,
@@ -30,9 +41,9 @@ type FormState = {
   name: string;
   description: string;
   color: string;
-  price: string; // keep as string for input
-  qty: string; // keep as string for input
-  categoryId: string; // select returns string
+  price: string;
+  qty: string;
+  categoryId: string;
   isActive: boolean;
 };
 
@@ -46,6 +57,30 @@ const initialForm: FormState = {
   isActive: true,
 };
 
+/* ── tiny helper: icon-wrapped input ──────────────────────────── */
+function FieldRow({
+  label,
+  required,
+  icon,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {icon}
+        {label}
+        {required && <span className="text-orange-500 ml-0.5">*</span>}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
 export default function AddProductModal() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(initialForm);
@@ -53,13 +88,11 @@ export default function AddProductModal() {
 
   const queryClient = useQueryClient();
 
-  // Load categories for dropdown
   const { data: categories, isLoading: catLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategory,
   });
 
-  // Basic validation
   const canSubmit = useMemo(() => {
     return (
       form.name.trim().length > 0 &&
@@ -67,7 +100,7 @@ export default function AddProductModal() {
       form.qty.trim().length > 0 &&
       form.categoryId.trim().length > 0
     );
-  }, [form]); //   return value: true and false only, so we can use it to disable submit button and show error message
+  }, [form]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: (payload: CreateProductInput) => CreateProduct(payload),
@@ -87,7 +120,7 @@ export default function AddProductModal() {
     setErrorMsg("");
 
     if (!canSubmit) {
-      setErrorMsg("Please fill: Name, Price, Qty, Category");
+      setErrorMsg("Please fill in: Name, Price, Qty and Category.");
       return;
     }
 
@@ -106,7 +139,7 @@ export default function AddProductModal() {
       Number.isNaN(payload.qty) ||
       Number.isNaN(payload.categoryId)
     ) {
-      setErrorMsg("Price/Qty/Category must be number");
+      setErrorMsg("Price, Qty and Category must be valid numbers.");
       return;
     }
 
@@ -116,130 +149,249 @@ export default function AddProductModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-orange-400">
-          <Plus className="w-4 h-4" color="white" />
+        <Button
+          className="gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white shadow-md shadow-orange-200 transition-all duration-200"
+        >
+          <Plus className="w-4 h-4" />
           Add Product
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Insert Product</DialogTitle>
+      <DialogContent className="max-w-[480px] p-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
+        {/* ── Header ──────────────────────────────────────────── */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60 bg-gradient-to-br from-orange-50/80 to-white dark:from-orange-950/20 dark:to-background">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500 to-orange-400 shadow-md shadow-orange-200 dark:shadow-orange-900/40">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-bold tracking-tight">
+                New Product
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Fill in the details to add a new product.
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          {/* Name */}
-          <div className="space-y-2">
-            <Label>Product Name *</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Macbook Pro M5"
-            />
-          </div>
+        {/* ── Form body ────────────────────────────────────────── */}
+        <form onSubmit={onSubmit} className="px-6 py-5 space-y-5">
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              placeholder="Short description..."
-            />
-          </div>
+          {/* Section: Basic Info */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              Basic Information
+            </p>
 
-          {/* Color */}
-          <div className="space-y-2">
-            <Label>Color</Label>
-            <Input
-              value={form.color}
-              onChange={(e) => setForm({ ...form, color: e.target.value })}
-              placeholder="e.g. Black"
-            />
-          </div>
-
-          {/* Price + Qty */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Price *</Label>
-              <Input
-                type="number"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Quantity *</Label>
-              <Input
-                type="number"
-                value={form.qty}
-                onChange={(e) => setForm({ ...form, qty: e.target.value })}
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          {/* Category Select */}
-          <div className="space-y-2">
-            <Label>Category *</Label>
-            <Select
-              value={form.categoryId}
-              onValueChange={(v) => setForm({ ...form, categoryId: v })}
-              disabled={catLoading}
+            {/* Product Name */}
+            <FieldRow
+              label="Product Name"
+              required
+              icon={<Package className="w-3 h-3" />}
             >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={catLoading ? "Loading..." : "Select category"}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Macbook Pro M5"
+                className="h-9 text-sm rounded-lg border-border/70 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-colors"
+              />
+            </FieldRow>
+
+            {/* Description */}
+            <FieldRow
+              label="Description"
+              icon={<AlignLeft className="w-3 h-3" />}
+            >
+              <Textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                placeholder="Short product description..."
+                rows={3}
+                className="text-sm rounded-lg border-border/70 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 resize-none transition-colors"
+              />
+            </FieldRow>
+
+            {/* Color */}
+            <FieldRow label="Color" icon={<Palette className="w-3 h-3" />}>
+              <Input
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                placeholder="e.g. Midnight Black"
+                className="h-9 text-sm rounded-lg border-border/70 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-colors"
+              />
+            </FieldRow>
           </div>
 
-          {/* Active Switch */}
-          <div className="flex items-center justify-between rounded-md border p-3">
-            <div>
-              <div className="font-medium">Status</div>
-              <div className="text-sm text-muted-foreground">
-                {form.isActive ? "Active" : "Inactive"}
+          {/* Divider */}
+          <div className="border-t border-border/40" />
+
+          {/* Section: Pricing & Stock */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              Pricing &amp; Stock
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Price */}
+              <FieldRow
+                label="Price"
+                required
+                icon={<DollarSign className="w-3 h-3" />}
+              >
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium select-none">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.price}
+                    onChange={(e) =>
+                      setForm({ ...form, price: e.target.value })
+                    }
+                    placeholder="0.00"
+                    className="h-9 pl-7 text-sm rounded-lg border-border/70 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-colors"
+                  />
+                </div>
+              </FieldRow>
+
+              {/* Quantity */}
+              <FieldRow
+                label="Quantity"
+                required
+                icon={<Hash className="w-3 h-3" />}
+              >
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.qty}
+                  onChange={(e) => setForm({ ...form, qty: e.target.value })}
+                  placeholder="0"
+                  className="h-9 text-sm rounded-lg border-border/70 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-colors"
+                />
+              </FieldRow>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border/40" />
+
+          {/* Section: Classification */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              Classification
+            </p>
+
+            {/* Category */}
+            <FieldRow
+              label="Category"
+              required
+              icon={<Layers className="w-3 h-3" />}
+            >
+              <Select
+                value={form.categoryId}
+                onValueChange={(v) => setForm({ ...form, categoryId: v })}
+                disabled={catLoading}
+              >
+                <SelectTrigger className="h-9 text-sm rounded-lg border-border/70 focus:ring-orange-400/40 focus:border-orange-400 transition-colors">
+                  <SelectValue
+                    placeholder={
+                      catLoading ? "Loading categories…" : "Select a category"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {categories?.map((c) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3 h-3 text-muted-foreground" />
+                        {c.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldRow>
+
+            {/* Status toggle */}
+            <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/30 px-4 py-3 transition-colors hover:bg-muted/50">
+              <div className="flex items-center gap-3">
+                {form.isActive ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-muted-foreground" />
+                )}
+                <div>
+                  <p className="text-sm font-medium leading-none">
+                    Product Status
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {form.isActive
+                      ? "Visible and available for sale"
+                      : "Hidden from the catalogue"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                    form.isActive
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {form.isActive ? "Active" : "Inactive"}
+                </span>
+                <Switch
+                  checked={form.isActive}
+                  onCheckedChange={(checked) =>
+                    setForm({ ...form, isActive: checked })
+                  }
+                  className="data-[state=checked]:bg-emerald-500"
+                />
               </div>
             </div>
-            <Switch
-              checked={form.isActive}
-              onCheckedChange={(checked) =>
-                setForm({ ...form, isActive: checked })
-              }
-            />
           </div>
 
-          {/* Error */}
-          {errorMsg ? (
-            <div className="text-sm text-red-500">{errorMsg}</div>
-          ) : null}
+          {/* Error message */}
+          {errorMsg && (
+            <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-600 dark:bg-red-950/30 dark:border-red-800 dark:text-red-400">
+              <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              {errorMsg}
+            </div>
+          )}
 
-          {/* Footer buttons */}
-          <div className="flex justify-end gap-2 pt-2">
+          {/* ── Footer actions ─────────────────────────────────── */}
+          <div className="flex items-center justify-end gap-2 pt-1">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={() => setOpen(false)}
               disabled={isPending}
+              className="h-9 px-4 text-sm rounded-lg"
             >
               Cancel
             </Button>
 
-            <Button type="submit" disabled={!canSubmit || isPending}>
-              {isPending ? "Saving..." : "Save Product"}
+            <Button
+              type="submit"
+              disabled={!canSubmit || isPending}
+              className="h-9 px-5 text-sm rounded-lg gap-2 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Save Product
+                </>
+              )}
             </Button>
           </div>
         </form>
