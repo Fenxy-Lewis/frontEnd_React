@@ -94,6 +94,9 @@ export const uploadProductImage = async (id: number, file: File) => {
 export const deleteProductImage = async (id: number) => {
   try {
     const res = await api.delete(`/products/delete/${id}`);
+    if (!res.data.success) {
+      throw new Error(res.data.message || "Failed to delete image");
+    }
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
