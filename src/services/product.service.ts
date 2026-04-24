@@ -29,7 +29,6 @@ export const fetchProducts = async (
   }
 };
 
-
 export async function CreateProduct(payload: CreateProductInput) {
   try {
     // បោះ payload ចូលជា argument ទី ២ របស់ api.post()
@@ -91,9 +90,10 @@ export const uploadProductImage = async (id: number, file: File) => {
   }
 };
 // Delete ProductImage
-export const deleteProductImage = async (id: number) => {
+// Delete ProductImage
+export const deleteProductImage = async (imageId: number) => {
   try {
-    const res = await api.delete(`/products/delete/${id}`);
+    const res = await api.delete(`/products/delete/${imageId}`);
     if (!res.data.success) {
       throw new Error(res.data.message || "Failed to delete image");
     }

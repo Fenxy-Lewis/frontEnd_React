@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteProductImage } from "@/services/product.service";
 import { toast } from "sonner";
+
 export const useDeleteProductImage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => await deleteProductImage(id),
+    mutationFn: async (imageId: number) => await deleteProductImage(imageId),
     onSuccess: () => {
       toast.success("Product image deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["products"] });
