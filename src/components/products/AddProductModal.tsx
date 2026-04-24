@@ -57,10 +57,6 @@ export default function AddProductModal() {
   const { data: categories, isLoading: catLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategory,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 1 minute
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
   });
 
   // Basic validation
