@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Tag,
 } from "lucide-react";
 
 interface ProductExpireInsertProps {
@@ -129,24 +130,62 @@ export default function ProductExpireInsert({
 
             {/* ── Product Lookup Result ── */}
             {debouncedId && (
-              <div className="flex items-center gap-2 mt-1.5 px-1 min-h-[20px]">
+              <div className="mt-2 min-h-[24px]">
                 {isLookingUp ? (
-                  <>
+                  <div className="flex items-center gap-2 px-1">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
                     <span className="text-xs text-gray-400">Looking up product...</span>
-                  </>
+                  </div>
                 ) : notFound ? (
-                  <>
-                    <AlertCircle className="h-3.5 w-3.5 text-red-400" />
-                    <span className="text-xs text-red-400">Product not found</span>
-                  </>
+                  <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                    <span className="text-xs font-medium text-red-500">Product not found</span>
+                  </div>
                 ) : foundProduct?.name ? (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span className="text-xs font-semibold text-emerald-600">
-                      {foundProduct.name}
-                    </span>
-                  </>
+                  // ── Rich Product Card ──
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 shadow-sm">
+                    {/* Thumbnail */}
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-sm">
+                      {(() => {
+                        const img = foundProduct.productImages
+                          ?.sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0]?.imageUrl;
+                        return img ? (
+                          <img
+                            src={img}
+                            alt={foundProduct.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <Package className="h-6 w-6 text-gray-300" />
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    {/* Info */}
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {foundProduct.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                          <span className="font-medium text-gray-500">ID</span>
+                          #{foundProduct.id}
+                        </span>
+                        {foundProduct.category?.name && (
+                          <span className="flex items-center gap-1 text-[11px]">
+                            <Tag className="h-2.5 w-2.5 text-emerald-400" />
+                            <span className="text-emerald-600 font-medium">
+                              {foundProduct.category.name}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ) : null}
               </div>
             )}
