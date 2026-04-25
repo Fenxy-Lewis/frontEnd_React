@@ -40,22 +40,24 @@ export const fetchExpiringSoon = async (days: number = 30) => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message || "Failed to fetch expiring soon products",
+        error.response?.data?.message ||
+          "Failed to fetch expiring soon products",
       );
     }
     throw new Error("An unexpected error occurred");
   }
 };
 
-// 3. GET /api/v1/product-expires/:id
+// 3. GET /api/v1/products/:id
 export const getProductExpireById = async (id: number) => {
   try {
-    const res = await api.get(`/product-expires/${id}`);
+    const res = await api.get(`/products/${id}`);
     return res.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        error.response?.data?.message || "Failed to fetch product expiry record",
+        error.response?.data?.message ||
+          "Failed to fetch product expiry record",
       );
     }
     throw new Error("An unexpected error occurred");

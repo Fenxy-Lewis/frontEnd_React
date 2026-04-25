@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchProducts, fetchProductById } from "@/services/product.service";
 
-export const useProducts = (debouncedKeyword: string, page: number, limit: number) => {
+export const useProducts = (
+  debouncedKeyword: string,
+  page: number,
+  limit: number,
+) => {
   return useQuery({
     queryKey: ["products", page, limit, debouncedKeyword],
     queryFn: () => fetchProducts(debouncedKeyword, page, limit),
