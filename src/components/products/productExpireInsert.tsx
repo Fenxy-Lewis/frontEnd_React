@@ -41,8 +41,12 @@ export default function ProductExpireInsert({
   // Debounce: wait 500ms after user stops typing before fetching
   useEffect(() => {
     const parsed = parseInt(productIdInput, 10);
-    const isValid = productIdInput.trim() !== "" && !isNaN(parsed) && parsed > 0;
-    const timer = setTimeout(() => setDebouncedId(isValid ? parsed : null), 500);
+    const isValid =
+      productIdInput.trim() !== "" && !isNaN(parsed) && parsed > 0;
+    const timer = setTimeout(
+      () => setDebouncedId(isValid ? parsed : null),
+      500,
+    );
     return () => clearTimeout(timer);
   }, [productIdInput]);
 
@@ -84,7 +88,11 @@ export default function ProductExpireInsert({
   };
 
   const isFormValid =
-    !!debouncedId && !!foundProduct && !notFound && !!batchNumber && !!expiryDate;
+    !!debouncedId &&
+    !!foundProduct &&
+    !notFound &&
+    !!batchNumber &&
+    !!expiryDate;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -107,7 +115,6 @@ export default function ProductExpireInsert({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-
           {/* ── Product ID Input ── */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -128,12 +135,13 @@ export default function ProductExpireInsert({
             {/* ── Lookup State ── */}
             {debouncedId && (
               <div className="mt-1">
-
                 {/* Loading */}
                 {isLookingUp && (
                   <div className="flex items-center gap-2 px-1">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                    <span className="text-xs text-gray-400">Looking up product...</span>
+                    <span className="text-xs text-gray-400">
+                      Looking up product...
+                    </span>
                   </div>
                 )}
 
@@ -150,9 +158,8 @@ export default function ProductExpireInsert({
                 {/* ── Product Card (shown when found) ── */}
                 {!isLookingUp && !notFound && foundProduct?.name && (
                   <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 shadow-sm">
-
                     {/* Image */}
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-sm">
+                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-sm">
                       {productImage ? (
                         <img
                           src={productImage}
