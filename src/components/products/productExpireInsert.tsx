@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCreateProductExpire } from "@/hooks/product/useProductsExpire";
+import { useProductById } from "@/hooks/product/useProducts";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Timer, Plus, Package } from "lucide-react";
+import { Timer, Plus, Package, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 interface ProductExpireInsertProps {
   open: boolean;
@@ -22,10 +23,24 @@ export default function ProductExpireInsert({
   setOpen,
 }: ProductExpireInsertProps) {
   const [productId, setProductId] = useState("");
+  const [debouncedId, setDebouncedId] = useState<number | null>(null);
   const [batchNumber, setBatchNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
 
   const { mutateAsync: createExpiry, isPending } = useCreateProductExpire();
+
+  // Debounce product ID lookup by 500ms
+  useEffect(() => {
+    const parsed = parseInt(productId, 10);
+    if (!productId || isNaN(parsed) || parsed <= 0) {
+      setDebouncedId(null);
+      return;
+    }
+    const timer = setTimeout(() => setDebouncedId(parsed), 500);
+    return () => clearTimeout(timer);
+  }, [productId]);
+
+  const { data: foundProduct, isFetching: isSearching, isError: notFound } = useProductById(debouncedId);
 
   const handleCreate = async () => {
     if (!productId || !batchNumber || !expiryDate) return;
@@ -40,6 +55,7 @@ export default function ProductExpireInsert({
       setProductId("");
       setBatchNumber("");
       setExpiryDate("");
+      setDebouncedId(null);
     } catch {
       // handled by useCreateProductExpire hook
     }
@@ -77,7 +93,27 @@ export default function ProductExpireInsert({
                 className="pl-10 rounded-xl border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
-            {/* In a real scenario, this would be a Select dropdown pulling from useProducts() */}
+            {/* Product name lookup result */}
+            {debouncedId && (
+              <div className="flex items-center gap-2 mt-1.5 px-1">
+                {isSearching ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
+                    <span className="text-xs text-gray-400">Looking up product...</span>
+                  </>
+                ) : notFound || (!isSearching && !foundProduct) ? (
+                  <>
+                    <AlertCircle className="h-3.5 w-3.5 text-red-400" />
+                    <span className="text-xs text-red-400">Product not found</span>
+                  </>
+                ) : foundProduct ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="text-xs font-semibold text-emerald-600">{foundProduct.name}</span>
+                  </>
+                ) : null}
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">

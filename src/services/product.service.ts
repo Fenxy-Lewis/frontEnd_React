@@ -29,6 +29,20 @@ export const fetchProducts = async (
   }
 };
 
+export const fetchProductById = async (id: number) => {
+  try {
+    const res = await api.get(`/products/${id}`);
+    return res.data as ProductType;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch product",
+      );
+    }
+    throw new Error("An unexpected error occurred");
+  }
+};
+
 export async function CreateProduct(payload: CreateProductInput) {
   try {
     // បោះ payload ចូលជា argument ទី ២ របស់ api.post()
