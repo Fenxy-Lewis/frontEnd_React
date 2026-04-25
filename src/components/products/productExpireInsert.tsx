@@ -32,11 +32,8 @@ export default function ProductExpireInsert({
   // Debounce product ID lookup by 500ms
   useEffect(() => {
     const parsed = parseInt(productId, 10);
-    if (!productId || isNaN(parsed) || parsed <= 0) {
-      setDebouncedId(null);
-      return;
-    }
-    const timer = setTimeout(() => setDebouncedId(parsed), 500);
+    const isValid = productId.trim() !== "" && !isNaN(parsed) && parsed > 0;
+    const timer = setTimeout(() => setDebouncedId(isValid ? parsed : null), 500);
     return () => clearTimeout(timer);
   }, [productId]);
 
