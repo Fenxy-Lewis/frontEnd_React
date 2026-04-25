@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCreateProductExpire } from "@/hooks/product/useProductsExpire";
-import { useProductById } from "@/hooks/product/useProducts";
+import { useProducts } from "@/hooks/product/useProducts";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +14,12 @@ import { Input } from "@/components/ui/input";
 import {
   Timer,
   Plus,
-  Package,
+  Search,
   CheckCircle2,
-  AlertCircle,
   Loader2,
-  Tag,
+  Package,
 } from "lucide-react";
+import type { ProductType } from "@/Type/product";
 
 interface ProductExpireInsertProps {
   open: boolean;
@@ -30,9 +30,14 @@ export default function ProductExpireInsert({
   open,
   setOpen,
 }: ProductExpireInsertProps) {
-  // ID input state
-  const [productIdInput, setProductIdInput] = useState("");
-  const [debouncedId, setDebouncedId] = useState<number | null>(null);
+  // Search state
+  const [searchText, setSearchText] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
+    null,
+  );
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [batchNumber, setBatchNumber] = useState("");
@@ -40,40 +45,56 @@ export default function ProductExpireInsert({
 
   const { mutateAsync: createExpiry, isPending } = useCreateProductExpire();
 
-  // ── Debounce product ID input → 500ms ──
+  // Debounce search text → 400ms
   useEffect(() => {
-    const parsed = parseInt(productIdInput, 10);
-    const isValid = productIdInput.trim() !== "" && !isNaN(parsed) && parsed > 0;
-    const timer = setTimeout(() => setDebouncedId(isValid ? parsed : null), 500);
+    const timer = setTimeout(() => setDebouncedSearch(searchText), 400);
     return () => clearTimeout(timer);
-  }, [productIdInput]);
+  }, [searchText]);
 
-  // ── Reset form when dialog opens (event handler, not effect) ──
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen) {
-      setProductIdInput("");
-      setDebouncedId(null);
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setSearchText("");
+      setDebouncedSearch("");
+      setSelectedProduct(null);
       setBatchNumber("");
       setExpiryDate("");
+      setShowDropdown(false);
     }
-    setOpen(isOpen);
+  }, [open]);
+
+  // Click outside → close dropdown
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Fetch products using existing /products?search= endpoint
+  const { data, isFetching: isSearching } = useProducts(debouncedSearch, 1, 10);
+
+  const productList: ProductType[] = Array.isArray(data)
+    ? data
+    : (data?.data ?? []);
+
+  const handleSelectProduct = (product: ProductType) => {
+    setSelectedProduct(product);
+    setSearchText(String(product.id));
+    setShowDropdown(false);
   };
 
-  // ── Fetch product by ID ──
-  const {
-    data: foundProduct,
-    isLoading: isSearching,
-    isFetching: isRefetching,
-    isError: notFound,
-  } = useProductById(debouncedId);
-
-  const isLookingUp = isSearching || isRefetching;
-
   const handleCreate = async () => {
-    if (!debouncedId || !foundProduct || !batchNumber || !expiryDate) return;
+    if (!selectedProduct?.id || !batchNumber || !expiryDate) return;
     try {
       await createExpiry({
-        productId: debouncedId,
+        productId: selectedProduct.id,
         batchNumber,
         expiryDate,
       });
@@ -83,16 +104,11 @@ export default function ProductExpireInsert({
     }
   };
 
-  const isFormValid =
-    !!debouncedId &&
-    !!foundProduct &&
-    !notFound &&
-    !!batchNumber &&
-    !!expiryDate;
+  const isFormValid = !!selectedProduct && !!batchNumber && !!expiryDate;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-1">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
@@ -110,83 +126,94 @@ export default function ProductExpireInsert({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-
-          {/* ── Product ID Input ── */}
-          <div className="space-y-1.5">
+          {/* ── Product Search ── */}
+          <div className="space-y-1.5" ref={dropdownRef}>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Product ID <span className="text-red-400">*</span>
+              Product <span className="text-red-400">*</span>
             </label>
             <div className="relative">
-              <Package className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              {/* Search icon or spinner */}
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                {isSearching ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />
+                ) : (
+                  <Search className="h-4 w-4 text-gray-400" />
+                )}
+              </div>
               <Input
-                type="number"
-                min={1}
-                value={productIdInput}
-                onChange={(e) => setProductIdInput(e.target.value)}
-                placeholder="Enter Product ID..."
+                value={searchText}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+                  setSelectedProduct(null); // clear selection when typing
+                  setShowDropdown(true);
+                }}
+                onFocus={() => {
+                  if (searchText.trim()) setShowDropdown(true);
+                }}
+                placeholder="Search product by name..."
                 className="pl-10 rounded-xl border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
               />
+
+              {/* Dropdown Results */}
+              {showDropdown && debouncedSearch.trim() && (
+                <div className="absolute z-50 mt-1 w-full rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                  {isSearching ? (
+                    <div className="flex items-center gap-2 px-4 py-3 text-xs text-gray-400">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Searching...
+                    </div>
+                  ) : productList.length === 0 ? (
+                    <div className="flex items-center gap-2 px-4 py-3 text-xs text-gray-400">
+                      <Package className="h-3.5 w-3.5" />
+                      No products found
+                    </div>
+                  ) : (
+                    <ul className="max-h-48 overflow-y-auto divide-y divide-gray-50">
+                      {productList.map((p) => {
+                        const img = p.productImages?.sort(
+                          (a, b) => (b.id ?? 0) - (a.id ?? 0),
+                        )[0]?.imageUrl;
+                        return (
+                          <li
+                            key={p.id}
+                            onClick={() => handleSelectProduct(p)}
+                            className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-emerald-50 transition-colors"
+                          >
+                            {/* Product Thumbnail */}
+                            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                              <img
+                                src={img ?? "/img/no-image.png"}
+                                alt={p.name}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {p.name}
+                              </p>
+                              <p className="text-[11px] text-gray-400">
+                                ID #{p.id} · {p.category?.name ?? "—"}
+                              </p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* ── Product Lookup Result ── */}
-            {debouncedId && (
-              <div className="mt-2 min-h-[24px]">
-                {isLookingUp ? (
-                  <div className="flex items-center gap-2 px-1">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                    <span className="text-xs text-gray-400">Looking up product...</span>
-                  </div>
-                ) : notFound ? (
-                  <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
-                    <span className="text-xs font-medium text-red-500">Product not found</span>
-                  </div>
-                ) : foundProduct?.name ? (
-                  // ── Rich Product Card ──
-                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 shadow-sm">
-                    {/* Thumbnail */}
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-sm">
-                      {(() => {
-                        const img = foundProduct.productImages
-                          ?.sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0]?.imageUrl;
-                        return img ? (
-                          <img
-                            src={img}
-                            alt={foundProduct.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <Package className="h-6 w-6 text-gray-300" />
-                          </div>
-                        );
-                      })()}
-                    </div>
-                    {/* Info */}
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                        <p className="text-sm font-bold text-gray-900 truncate">
-                          {foundProduct.name}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                          <span className="font-medium text-gray-500">ID</span>
-                          #{foundProduct.id}
-                        </span>
-                        {foundProduct.category?.name && (
-                          <span className="flex items-center gap-1 text-[11px]">
-                            <Tag className="h-2.5 w-2.5 text-emerald-400" />
-                            <span className="text-emerald-600 font-medium">
-                              {foundProduct.category.name}
-                            </span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
+            {/* Selected Product Confirmation */}
+            {selectedProduct && (
+              <div className="flex items-center gap-2 mt-1.5 px-1">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                <span className="text-xs font-semibold text-emerald-600 truncate">
+                  {selectedProduct.name}
+                  <span className="text-emerald-400 font-normal ml-1">
+                    (ID #{selectedProduct.id})
+                  </span>
+                </span>
               </div>
             )}
           </div>
