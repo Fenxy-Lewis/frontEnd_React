@@ -178,14 +178,14 @@ export default function ProductExpireInsert({
                       {/* Name */}
                       <div className="flex items-center gap-1">
                         <CheckCircle2 className="h-2 w-2 shrink-0 text-emerald-500" />
-                        <p className="text-sm font-bold text-gray-900 truncate">
+                        <p className="text-xs font-bold text-gray-900 truncate">
                           {foundProduct.name}
                         </p>
                       </div>
 
                       {/* ID + Category */}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-500">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 py-0.5 text-[11px] font-semibold text-gray-500">
                           <Hash className="h-1 w-1" />
                           {foundProduct.id}
                         </span>
