@@ -157,7 +157,7 @@ export default function ProductExpireInsert({
 
                 {/* ── Product Card (shown when found) ── */}
                 {!isLookingUp && !notFound && foundProduct?.name && (
-                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 shadow-sm">
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-1 shadow-sm">
                     {/* Image */}
                     <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-emerald-100 bg-white shadow-sm">
                       {productImage ? (
@@ -168,7 +168,7 @@ export default function ProductExpireInsert({
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gray-50">
-                          <Package className="h-7 w-7 text-gray-300" />
+                          <Package className="h-5 w-5 text-gray-300" />
                         </div>
                       )}
                     </div>
@@ -176,8 +176,8 @@ export default function ProductExpireInsert({
                     {/* Info */}
                     <div className="min-w-0 flex-1 space-y-1">
                       {/* Name */}
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="h-2 w-2 shrink-0 text-emerald-500" />
                         <p className="text-sm font-bold text-gray-900 truncate">
                           {foundProduct.name}
                         </p>
@@ -186,12 +186,12 @@ export default function ProductExpireInsert({
                       {/* ID + Category */}
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-500">
-                          <Hash className="h-2.5 w-2.5" />
+                          <Hash className="h-1 w-1" />
                           {foundProduct.id}
                         </span>
                         {foundProduct.category?.name && (
                           <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                            <Tag className="h-2.5 w-2.5" />
+                            <Tag className="h-1 w-1" />
                             {foundProduct.category.name}
                           </span>
                         )}
