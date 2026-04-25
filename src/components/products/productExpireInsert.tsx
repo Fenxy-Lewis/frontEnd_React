@@ -37,7 +37,15 @@ export default function ProductExpireInsert({
     return () => clearTimeout(timer);
   }, [productId]);
 
-  const { data: foundProduct, isFetching: isSearching, isError: notFound } = useProductById(debouncedId);
+  const {
+    data: foundProduct,
+    isLoading: isSearching,
+    isFetching: isRefetching,
+    isError: notFound,
+  } = useProductById(debouncedId);
+
+  // True loading: query is enabled and actively fetching for the first time
+  const isLookingUp = isSearching || isRefetching;
 
   const handleCreate = async () => {
     if (!productId || !batchNumber || !expiryDate) return;
@@ -92,21 +100,26 @@ export default function ProductExpireInsert({
             </div>
             {/* Product name lookup result */}
             {debouncedId && (
-              <div className="flex items-center gap-2 mt-1.5 px-1">
-                {isSearching ? (
+              <div className="flex items-center gap-2 mt-1.5 px-1 min-h-[20px]">
+                {isLookingUp ? (
+                  // Loading: query is actively fetching
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-500" />
                     <span className="text-xs text-gray-400">Looking up product...</span>
                   </>
-                ) : notFound || (!isSearching && !foundProduct) ? (
+                ) : notFound ? (
+                  // Error: backend returned 404 or error
                   <>
                     <AlertCircle className="h-3.5 w-3.5 text-red-400" />
                     <span className="text-xs text-red-400">Product not found</span>
                   </>
-                ) : foundProduct ? (
+                ) : foundProduct?.name ? (
+                  // Success: product found AND name is present
                   <>
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span className="text-xs font-semibold text-emerald-600">{foundProduct.name}</span>
+                    <span className="text-xs font-semibold text-emerald-600">
+                      {foundProduct.name}
+                    </span>
                   </>
                 ) : null}
               </div>

@@ -32,7 +32,11 @@ export const fetchProducts = async (
 export const fetchProductById = async (id: number) => {
   try {
     const res = await api.get(`/products/${id}`);
-    return res.data as ProductType;
+    // Handle both response shapes:
+    // - { id, name, ... }  (flat)
+    // - { data: { id, name, ... } }  (wrapped)
+    const product = res.data?.data ?? res.data;
+    return product as ProductType;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
